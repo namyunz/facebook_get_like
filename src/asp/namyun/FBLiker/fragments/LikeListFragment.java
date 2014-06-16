@@ -3,14 +3,13 @@ package asp.namyun.FBLiker.fragments;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.*;
 import asp.namyun.FBLiker.BaseElement;
 import asp.namyun.FBLiker.R;
 import com.facebook.Request;
@@ -23,9 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class LikeListFragment extends Fragment {
 
@@ -33,7 +30,9 @@ public class LikeListFragment extends Fragment {
     private ActionListAdapter adapter;
     private List<BaseElement> elementList;
 
-    private ArrayList<String> pageIds = new ArrayList<String>();
+    private TimerTask fetchLikesTask;
+    private Timer fetchTimer;
+    private Handler asyncTaskHandler;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -68,7 +67,9 @@ public class LikeListFragment extends Fragment {
                                     GraphObject graphObject = response.getGraphObject();
                                     if (graphObject != null) {
                                         if (graphObject.getProperty("id")!=null) {
-                                            elementList.add(new LikeListElement((String)graphObject.getProperty("name"),
+                                            elementList.add(new LikeListElement(
+                                                    (String)graphObject.getProperty("id"),
+                                                    (String)graphObject.getProperty("name"),
                                                     String.valueOf(graphObject.getProperty("likes")),
                                                     (String)graphObject.getProperty("about")));
                                             adapter.notifyDataSetChanged();
@@ -89,9 +90,11 @@ public class LikeListFragment extends Fragment {
         requestBatch.executeAsync();
     }
 
+    private native int ReceiveFndValue(String value);
+
     private class LikeListElement extends BaseElement {
-        public LikeListElement(String name, String likes, String about) {
-            super(name, likes, about);
+        public LikeListElement(String id, String name, String likes, String about) {
+            super(id, name, likes, about);
         }
 
         @Override
@@ -99,7 +102,36 @@ public class LikeListFragment extends Fragment {
             return new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // Do nothing..
+                    Log.i("GRAPH",getID()+" SELECTED");
+
+                    asyncTaskHandler = new Handler();
+                    fetchLikesTask = new TimerTask() {
+                        @Override
+                        public void run() {
+                            asyncTaskHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    RequestBatch pageRequestBatch = new RequestBatch();
+                                    pageRequestBatch.add(new Request(Session.getActiveSession(),
+                                            String.valueOf(getID()), null, null, new Request.Callback() {
+                                        public void onCompleted(Response response) {
+                                            GraphObject graphObject = response.getGraphObject();
+                                            if (graphObject != null) {
+                                                if (graphObject.getProperty("id")!=null) {
+                                                    Toast.makeText(getActivity(),graphObject.getProperty("name") + " has " + graphObject.getProperty("likes") + " likes",Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        }
+                                    }));
+
+                                    pageRequestBatch.executeAsync();
+                                }
+                            });
+                        }
+                    };
+
+                    fetchTimer = new Timer();
+                    fetchTimer.schedule(fetchLikesTask,0,8000);
                 }
             };
         }

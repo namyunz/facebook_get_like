@@ -4,17 +4,23 @@ import android.view.View;
 import android.widget.BaseAdapter;
 
 public abstract class BaseElement {
+    private String id;
     private String name;
     private String likes;
     private String about;
 
     private BaseAdapter adapter;
 
-    public BaseElement(String name, String likes, String about) {
+    public BaseElement(String id, String name, String likes, String about) {
         super();
+        this.id = id;
         this.name = name;
         this.likes = likes;
         this.about = about;
+    }
+
+    public String getID() {
+        return this.id;
     }
 
     public void setName(String value) {
