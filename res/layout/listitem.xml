@@ -5,23 +5,26 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:layout_gravity="center_horizontal"
-        >
-
-    <TextView
-            android:layout_width="90dip"
-            android:layout_height="match_parent"
-            android:text="New Text"
-            android:id="@+id/likes"
-            android:gravity="center"
-            android:textIsSelectable="false"
-            android:textSize="18sp"/>
+              android:background="#FFFFFF"
+              android:baselineAligned="false">
 
     <ImageView
             android:layout_width="30dip"
             android:layout_height="30dip"
             android:id="@+id/imageView"
             android:layout_gravity="center"
-            android:src="@drawable/fb_like_icon"/>
+            android:src="@drawable/fb_like_icon"
+            android:paddingLeft="5dip"/>
+
+    <TextView
+            android:layout_width="90dip"
+            android:layout_height="match_parent"
+            android:text="New Text"
+            android:id="@+id/likes"
+            android:gravity="center_vertical|left"
+            android:textIsSelectable="false"
+            android:textSize="18sp"
+            android:textColor="#3b5998"/>
 
     <LinearLayout
             android:orientation="vertical"
@@ -35,12 +38,14 @@
                 android:text="New Text"
                 android:id="@+id/name"
                 android:textSize="20sp"
-                android:textIsSelectable="true"/>
+                android:textIsSelectable="true"
+                android:textColor="#444546"/>
 
         <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="New Text"
-                android:id="@+id/about"/>
+                android:id="@+id/about"
+                android:textColor="#444546"/>
     </LinearLayout>
 </LinearLayout>

@@ -1,5 +1,6 @@
 package asp.namyun.FBLiker.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -9,6 +10,8 @@ import asp.namyun.FBLiker.R;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
+
+import java.util.Arrays;
 
 public class MainActivity extends FragmentActivity {
 
@@ -47,21 +50,27 @@ public class MainActivity extends FragmentActivity {
     @Override
     public void onResume() {
         super.onResume();
-        isResumed = true;
         uiHelper.onResume();
+        isResumed = true;
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        isResumed = false;
         uiHelper.onPause();
+        isResumed = false;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         uiHelper.onDestroy();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        uiHelper.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -115,10 +124,9 @@ public class MainActivity extends FragmentActivity {
     }
 
     private Session.StatusCallback callback = new Session.StatusCallback() {
-                @Override
-                public void call(Session session,
-                                 SessionState state, Exception exception) {
-                    onSessionStateChange(session, state, exception);
-                }
-            };
+        @Override
+        public void call(Session session, SessionState state, Exception exception) {
+            onSessionStateChange(session, state, exception);
+        }
+    };
 }

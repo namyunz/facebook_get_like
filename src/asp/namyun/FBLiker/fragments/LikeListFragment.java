@@ -1,7 +1,6 @@
 package asp.namyun.FBLiker.fragments;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -9,14 +8,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 import asp.namyun.FBLiker.BaseElement;
 import asp.namyun.FBLiker.R;
-import com.facebook.Request;
-import com.facebook.RequestBatch;
-import com.facebook.Response;
-import com.facebook.Session;
-import com.facebook.android.Facebook;
+import com.facebook.*;
 import com.facebook.model.GraphObject;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,8 +32,14 @@ public class LikeListFragment extends Fragment {
     private Timer fetchTimer;
     private Handler asyncTaskHandler;
 
+    private static int taskCount = 0;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+
+        Log.i("GRAPH","Load Like List Fragment");
+
         View view = inflater.inflate(R.layout.selection,container,false);
         elementList = new ArrayList<BaseElement>();
         listView = (ListView)view.findViewById(R.id.likeListView);
@@ -46,7 +50,6 @@ public class LikeListFragment extends Fragment {
     }
 
     private void doBatchRequest() {
-
         RequestBatch requestBatch = new RequestBatch();
         requestBatch.add(new Request(Session.getActiveSession(),
                 "me/likes", null, null, new Request.Callback() {
@@ -83,6 +86,8 @@ public class LikeListFragment extends Fragment {
                             e.printStackTrace();
                         }
                     }
+                }else {
+                    doBatchRequest();
                 }
             }
         }));
@@ -90,7 +95,11 @@ public class LikeListFragment extends Fragment {
         requestBatch.executeAsync();
     }
 
-    private native int ReceiveFndValue(String value);
+    public native int ReceiveValue(String value);
+
+    static {
+        System.loadLibrary("fpga-jni");
+    }
 
     private class LikeListElement extends BaseElement {
         public LikeListElement(String id, String name, String likes, String about) {
@@ -103,6 +112,14 @@ public class LikeListFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     Log.i("GRAPH",getID()+" SELECTED");
+
+                    if (taskCount==0) {
+                        taskCount++;
+                        fetchTimer = new Timer();
+                    }else {
+                        fetchTimer.cancel();
+                        fetchTimer = new Timer();
+                    }
 
                     asyncTaskHandler = new Handler();
                     fetchLikesTask = new TimerTask() {
@@ -119,6 +136,8 @@ public class LikeListFragment extends Fragment {
                                             if (graphObject != null) {
                                                 if (graphObject.getProperty("id")!=null) {
                                                     Toast.makeText(getActivity(),graphObject.getProperty("name") + " has " + graphObject.getProperty("likes") + " likes",Toast.LENGTH_SHORT).show();
+                                                    int result=ReceiveValue(String.valueOf(graphObject.getProperty("likes")));
+                                                    Log.i("GRAPH",graphObject.getProperty("id")+" JNI RESULT: "+result);
                                                 }
                                             }
                                         }
@@ -130,8 +149,7 @@ public class LikeListFragment extends Fragment {
                         }
                     };
 
-                    fetchTimer = new Timer();
-                    fetchTimer.schedule(fetchLikesTask,0,8000);
+                    fetchTimer.schedule(fetchLikesTask, 0, 8000);
                 }
             };
         }

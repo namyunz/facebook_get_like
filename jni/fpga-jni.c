@@ -14,7 +14,7 @@ int fpga_fnd(const char* str)
 {
 	int dev;
 	unsigned char data[4];
-	int i;
+	int i, j = 0;
 	int str_size;
 
 	memset(data,0,sizeof(data));
@@ -24,11 +24,15 @@ int fpga_fnd(const char* str)
 		str_size=MAX_DIGIT;
 	}
 
-	for(i=0;i<str_size;i++) {
-		if((str[i]<0x30)||(str[i])>0x39) {
+	for(i=0;i<MAX_DIGIT-str_size;i++) {
+		data[i]='0';
+	}
+
+	for(;i<MAX_DIGIT;i++) {
+		if((str[j]<0x30)||(str[j])>0x39) {
 			return 1;
 		}
-		data[i]=str[i]-0x30;
+		data[i]=str[j++]-0x30;
 	}
 
 	dev = open(FND_DEVICE, O_RDWR);
@@ -86,12 +90,13 @@ int fpga_led(void)
 	} else {
 		for(i=7; i>=0; i--) {
 			write (dev, &val[i], sizeof(unsigned char));
+			sleep(1);
 		}
 		close(dev);
 	}
 }
 
-JNIEXPORT jint JNICALL Java_achro4_fpga_ex2_FpgaFndActivity_ReceiveValue( JNIEnv* env,
+JNIEXPORT jint JNICALL Java_asp_namyun_FBLiker_fragments_LikeListFragment_ReceiveValue( JNIEnv* env,
 jobject thiz, jstring val )
 {
 	jint result;
